@@ -17,6 +17,9 @@ app.use(express.static('public'));
 //Hakkame päringuid parsima
 app.use(bodyparser.urlencoded({extended: false}));
 
+//Juhusliku pildi valimine
+//Selle lahenduse sain ma ChatGPT abiga. Next(); ütleb programmile, et töö on tehtud ning võib edasi minna. Kui seda poleks siis programm jääks sinna kinni.
+//res.locals lubab muutujat igalpool kasutada aga selle miinus on, et programm teeb seda koguaeg, isegi siis kui seda vaja ei ole. Ma ei tahtnud seda igale erinevale lehele kirja panna seega otsisin viisi seda "globally" kirja panna.
 app.use(async (req, res, next) => {
     try {
         const randomJpgPicture = await randomJpg.randomJpgPicture();
@@ -28,6 +31,7 @@ app.use(async (req, res, next) => {
         next();
     }
 });
+
 //avaleht
 app.get('/', (req,res) => {
 	//res.send('Express.js veeb käivitus!');
@@ -75,7 +79,7 @@ app.post('/regvisit', async (req, res) => {
 	try{
 		const date = dateTimeET.dateET(0);
 		const time = dateTimeET.timeET();
-		await fs.open(regTextRef, 'a');
+		await fs.open(regTextRef, 'a'); // a - append, lisab lõppu(+loob faili kui juba ei ole) w - write, kirjutab üle(loob faili), r - read, ainult loeb.
 		await fs.appendFile(regTextRef, req.body.nameInput + ',' + date + ',' + time + ';');
 		res.render('regvisit', {regMessage: 'Salvestamine õnnestus!'});
 	} catch{
@@ -88,9 +92,9 @@ app.post('/regvisit', async (req, res) => {
 app.get('/lastvisit', async (req, res) => {
 	try {
         const data = await fs.readFile(regTextRef, 'utf8');
-        const visits = data.split(';');
-		const lastVisit = visits[visits.length - 2];
-        const visitData = lastVisit.split(',');
+        const visits = data.split(';'); //Eraldab sissekanded algul ; märgiga
+		const lastVisit = visits[visits.length - 2]; //Kui sissekandeid on nt 5, siis nende arv on 6 ning 5 on tühi seega tuleb lahutada 2'ga, et saada päris sissekannet.
+        const visitData = lastVisit.split(','); //Eraldab leitud sissekande ,'dega, et nimi, kuupäev ja kellaaeg eraldada.
 		const userName = visitData[0];
 		const userDate = visitData[1];
 		const userTime = visitData[2];

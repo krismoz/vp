@@ -2,7 +2,11 @@ const express = require('express');
 const dateTimeET = require('./src/dateTimeET.js');
 const randomJpg = require('./src/pildid.js');
 const fs = require('fs').promises;
+//moodul andmebaasiga suhtlemiseks, koos async võimalustega
+const mysql = require('mysql2/promise');
 const bodyparser = require('body-parser');
+//moodul keskkonnamuutujate lugemiseks
+require('dotenv').config();
 
 const textRef = 'public/txt/vanasonad.txt';
 const regTextRef = 'public/txt/visits.txt';
@@ -102,6 +106,86 @@ app.get('/lastvisit', async (req, res) => {
     } catch (err) {
         console.log(err);
     }
+});
+
+//Eesti filmid
+app.get('/etmovies', (req, res) => {
+	res.render('etmovies');
+});
+
+//Eesti filmidega seotud isikud
+app.get('/etmovies/movie_people', async (req, res) => {
+	let connection; 
+	try{
+		connection = await mysql.createConnection({
+			host: process.env.DB_HOST,
+			user: process.env.DB_USER,
+			password: process.env.DB_PASS,
+			database: process.env.DB_DATABASE
+		});
+		//defineerime SQL päringu
+		let sqlReq = 'SELECT * FROM person';
+		//käivitame päringu
+		const [sqlRes] = await connection.execute(sqlReq);
+		console.log(sqlRes);
+		res.render('movie_people', {personList: sqlRes});
+	} catch(err){
+		console.log('Andmebaasiga suhtlemise viga: ' + err);
+		res.render('movie_people', {personList: []});
+	}
+	finally {
+		if(connection){
+			await connection.end();
+		}
+	}
+});
+
+//Eesti filmidega seotud inimeste lisamine
+app.get('/etmovies/extra_movie_people', (req, res) => {
+	res.render('extra_movie_people', {notice: 'Ootan sisestust!'});
+});
+
+app.post('/etmovies/extra_movie_people', async (req, res) => {
+	console.log(req.body);
+	//kontrollime andmeid, teeme kõige lahjema kontrolli
+	let deceasedDate = null;
+	if(req.body.deceasedInput != ''){
+		deceasedDate = req.body.deceasedInput;
+	}
+	
+	//sünnikuupäeva võrdlemine
+	const bornDate = new Date(req.body.bornInput);
+	const timeNow = new Date();
+	
+	if(!req.body.firstNameInput || !req.body.lastNameInput || !req.body.bornInput || isNaN(bornDate.getTime()) || bornDate > timeNow){
+		console.log('Andmed pole korrektsed!');
+		return res.render('extra_movie_people', {notice: 'Sisestatud andmed pole korrektsed!'});
+	}
+	let connection;
+	try{
+		connection = await mysql.createConnection({
+			host: process.env.DB_HOST,
+			user: process.env.DB_PASS,
+			password: process.env.DB_PASS,
+			database: process.env.DB_DATABASE
+		});
+		let sqlReq = 'INSERT INTO person (first_name, last_name, born, deceased) VALUES (?,?,?,?)';
+		await connection.execute(sqlReq, [
+			req.body.firstNameInput,
+			req.body.lastNameInput,
+			req.body.bornInput,
+			deceasedDate
+		]);
+		res.render('extra_movie_people', {notice: req.body.firstNameInput + ' ' + req.body.lastNameInput + ' andmebaasi salvestatud.'});
+	} catch(err){
+		console.log('Andmebaasiga suhtlemise viga: ' + err);
+		res.render('extra_movie_people', {notice: 'Tekkis viga, andmeid ei salvestatud.'});
+	}
+	finally {
+		if(connection){
+			await connection.end();
+		}
+	}
 });
 
 app.listen(5313);

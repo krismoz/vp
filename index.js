@@ -142,24 +142,44 @@ app.get('/etmovies/movie_people', async (req, res) => {
 
 //Eesti filmidega seotud inimeste lisamine
 app.get('/etmovies/extra_movie_people', (req, res) => {
-	res.render('extra_movie_people', {notice: 'Ootan sisestust!'});
+	res.render('extra_movie_people', {notice: 'Ootan sisestust!', wrongFirstName: null, wrongLastName: null, wrongBornInput: null, wrongDeceasedInput: null});
 });
 
 app.post('/etmovies/extra_movie_people', async (req, res) => {
 	console.log(req.body);
 	//kontrollime andmeid, teeme kõige lahjema kontrolli
 	let deceasedDate = null;
+	let deceasedDateTime = null;
 	if(req.body.deceasedInput != ''){
 		deceasedDate = req.body.deceasedInput;
+		deceasedDateTime = new Date(deceasedDate);
 	}
 	
 	//sünnikuupäeva võrdlemine
 	const bornDate = new Date(req.body.bornInput);
 	const timeNow = new Date();
 	
-	if(!req.body.firstNameInput || !req.body.lastNameInput || !req.body.bornInput || isNaN(bornDate.getTime()) || bornDate > timeNow){
-		console.log('Andmed pole korrektsed!');
-		return res.render('extra_movie_people', {notice: 'Sisestatud andmed pole korrektsed!'});
+	//Eesnime kontroll
+	if(!req.body.firstNameInput){
+		console.log('Eesnimi puudub!');
+		return res.render('extra_movie_people', {notice: 'Eesnimi puudub!', wrongFirstName: req.body.firstNameInput, wrongLastName: req.body.lastNameInput, wrongBornInput: req.body.bornInput, wrongDeceasedInput: deceasedDate});
+	}
+	//Perekonnanime kontroll
+	else if(!req.body.lastNameInput){
+		console.log('Perekonnanimi puudub!');
+		return res.render('extra_movie_people', {notice: 'Perekonnanimi puudub!', wrongFirstName: req.body.firstNameInput, wrongLastName: req.body.lastNameInput, wrongBornInput: req.body.bornInput, wrongDeceasedInput: deceasedDate});
+	}
+	//Sünnikuupäeva kontroll
+	else if(!req.body.bornInput || isNaN(bornDate.getTime()) || bornDate > timeNow){
+		console.log('Sünnikuupäev ei ole korrektne!');
+		return res.render('extra_movie_people', {notice: 'Sünnikuupäev ei ole korrektne!', wrongFirstName: req.body.firstNameInput, wrongLastName: req.body.lastNameInput, wrongBornInput: req.body.bornInput, wrongDeceasedInput: deceasedDate});
+	}
+	//Surmakuupäeva kontroll
+	// Kõik kontrollid on pandud sulgudes sisse selleks, et kui esimene kontroll on false ehk surmakuupäev on jäetud tühjaks siis && jätab kõik ülejäänud kontrollid vahele sest see teab, et ülejäänud ei saa ka true olla. Muidu tuleb getTime() error. ChatGPT aitas.
+	// Kui on sisestatud surmakuupäev siis "deceasedDate != null" on true ja ta hakkab ülejäänut ka kontrollima.
+	else if(deceasedDate != null && (isNaN(deceasedDateTime.getTime()) || deceasedDateTime > timeNow || deceasedDateTime < bornDate)){
+		console.log('Surmakuupäev ei ole korrektne!');
+		return res.render('extra_movie_people', {notice: 'Surmakuupäev ei ole korrektne!', wrongFirstName: req.body.firstNameInput, wrongLastName: req.body.lastNameInput, wrongBornInput: req.body.bornInput, wrongDeceasedInput: deceasedDate});
 	}
 	let connection;
 	try{
@@ -176,10 +196,59 @@ app.post('/etmovies/extra_movie_people', async (req, res) => {
 			req.body.bornInput,
 			deceasedDate
 		]);
-		res.render('extra_movie_people', {notice: req.body.firstNameInput + ' ' + req.body.lastNameInput + ' andmebaasi salvestatud.'});
+		res.render('extra_movie_people', {notice: req.body.firstNameInput + ' ' + req.body.lastNameInput + ' andmebaasi salvestatud.', wrongFirstName: null, wrongLastName: null, wrongBornInput: null, wrongDeceasedInput: null});
 	} catch(err){
 		console.log('Andmebaasiga suhtlemise viga: ' + err);
-		res.render('extra_movie_people', {notice: 'Tekkis viga, andmeid ei salvestatud.'});
+		res.render('extra_movie_people', {notice: 'Tekkis viga, andmeid ei salvestatud.', wrongFirstName: null, wrongLastName: null, wrongBornInput: null, wrongDeceasedInput: null});
+	}
+	finally {
+		if(connection){
+			await connection.end();
+		}
+	}
+});
+//Eesti filmide sisestamine
+app.get('/etmovies/extra_etmovies', (req, res) => {
+	res.render('extra_etmovies', {notice:'Ootan sisestust!', wrongFilmTitle: null, wrongFilmYear: null, wrongFilmDurationMinutes: null, wrongFilmDescription: null});
+});
+
+app.post('/etmovies/extra_etmovies', async (req, res) => {
+	console.log(req.body);
+	if(!req.body.filmTitle){
+		console.log('Filmi pealkiri puudub!');
+		return res.render('extra_etmovies', {notice: 'Filmi pealkiri puudub!', wrongFilmTitle: req.body.filmTitle, wrongFilmYear: req.body.filmYear, wrongFilmDurationMinutes: req.body.filmDurationMinutes, wrongFilmDescription: req.body.filmDescription});
+	}
+	else if(!req.body.filmYear){
+		console.log('Filmi väljastamise aasta puudub!');
+		return res.render('extra_etmovies', {notice: 'Filmi väljastmise aasta puudub!', wrongFilmTitle: req.body.filmTitle, wrongFilmYear: req.body.filmYear, wrongFilmDurationMinutes: req.body.filmDurationMinutes, wrongFilmDescription: req.body.filmDescription});
+	}
+	else if(!req.body.filmDurationMinutes){
+		console.log('Filmi kestvus minutites puudub!');
+		return res.render('extra_etmovies', {notice: 'Filmi kestvus minutites puudub!', wrongFilmTitle: req.body.filmTitle, wrongFilmYear: req.body.filmYear, wrongFilmDurationMinutes: req.body.filmDurationMinutes, wrongFilmDescription: req.body.filmDescription});
+	}
+	else if(!req.body.filmDescription){
+		console.log('Filmi kirjeldus puudub!');
+		return res.render('extra_etmovies', {notice: 'Filmi kirjeldus puudub!', wrongFilmTitle: req.body.filmTitle, wrongFilmYear: req.body.filmYear, wrongFilmDurationMinutes: req.body.filmDurationMinutes, wrongFilmDescription: req.body.filmDescription});
+	}
+	let connection;
+	try{
+		connection = await mysql.createConnection({
+			host: process.env.DB_HOST,
+			user: process.env.DB_PASS,
+			password: process.env.DB_PASS,
+			database: process.env.DB_DATABASE
+		});
+		let sqlReq = 'INSERT INTO movie (title, release_year, duration_minutes, description) VALUES (?,?,?,?)';
+		await connection.execute(sqlReq, [
+			req.body.filmTitle,
+			req.body.filmYear,
+			req.body.filmDuration,
+			req.body.filmDescription
+		]);
+		res.render('extra_etmovies', {notice: req.body.filmTitle + ' andmebaasi salvestatud.', wrongFilmTitle: null, wrongFilmYear: null, wrongFilmDurationMinutes: null, wrongFilmDescription: null});
+	} catch(err){
+		console.log('Andmebaasiga suhtlemise viga: ' + err);
+		res.render('extra_etmovies', {notice: 'Tekkis viga, andmeid ei salvestatud.', wrongFilmTitle: null, wrongFilmYear: null, wrongFilmDurationMinutes: null, wrongFilmDescription: null});
 	}
 	finally {
 		if(connection){
@@ -188,4 +257,43 @@ app.post('/etmovies/extra_movie_people', async (req, res) => {
 	}
 });
 
+//Eesti filmidega seotud ametite lisamine
+app.get('/etmovies/extra_etmovie_jobs', (req, res) => {
+	res.render('extra_etmovie_jobs', {notice:'Ootan sisestust!', wrongMovieJobTitle: null, wrongMovieJobDescription: null});
+});
+
+app.post('/etmovies/extra_etmovie_jobs', async (req, res) => {
+	console.log(req.body);
+	if(!req.body.movieJobTitle){
+		console.log('Ameti nimetus puudub!');
+		return res.render('extra_etmovie_jobs', {notice: 'Ameti nimetus puudub!', wrongMovieJobTitle: req.body.movieJobTitle, wrongMovieJobDescription: req.body.movieJobDescription});
+	}
+	else if(!req.body.movieJobDescription){
+		console.log('Ameti kirjeldus puudub!');
+		return res.render('extra_etmovie_jobs', {notice: 'Ameti kirjeldus puudub!', wrongMovieJobTitle: req.body.movieJobTitle, wrongMovieJobDescription: req.body.movieJobDescription});
+	}
+	let connection;
+	try{
+		connection = await mysql.createConnection({
+			host: process.env.DB_HOST,
+			user: process.env.DB_PASS,
+			password: process.env.DB_PASS,
+			database: process.env.DB_DATABASE
+		});
+		let sqlReq = 'INSERT INTO profession (title, description) VALUES (?,?)';
+		await connection.execute(sqlReq, [
+			req.body.movieJobTitle,
+			req.body.movieJobDescription
+		]);
+		res.render('extra_etmovie_jobs', {notice: 'Amet: "' + req.body.filmTitle + '" andmebaasi salvestatud.', wrongMovieJobTitle: null, wrongMovieJobDescription: null});
+	} catch(err){
+		console.log('Andmebaasiga suhtlemise viga: ' + err);
+		res.render('extra_etmovie_jobs', {notice: 'Tekkis viga, andmeid ei salvestatud.', wrongMovieJobTitle: null, wrongMovieJobDescription: null});
+	}
+	finally {
+		if(connection){
+			await connection.end();
+		}
+	}
+});
 app.listen(5313);

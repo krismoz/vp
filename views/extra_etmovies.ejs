@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+	<meta charset="utf-8">
+	<title>Kris Mozgovoi | Veebiprogrammeerimine</title>
+</head>
+<body>
+	<img src="../pic/veebiprogrammeerimine_2026_AA.png" alt="banner">
+	<h1>Eesti film</h1>
+	<p>Siin saab lisada Eesti filme.</p>
+	<ul>
+		<li><a href="/">Avalehele</a></li>
+		<li><a href="/etmovies">Eesti filmide avalehele</a></li>
+	</ul>
+	<hr>
+	<h2>Lisa Eesti filme</h2>
+	<form method="POST">
+		<label for="filmTitle">Filmi pealkiri</label>
+		<input id="filmTitle" name="filmTitle" type="text" placeholder="Filmi pealkiri" value="<%=wrongFilmTitle%>">
+		<br>
+		<label for="filmYear">Aasta</label>
+		<input id="filmYear" name="filmYear" type="number" placeholder="Aasta" value="<%=wrongFilmYear%>">
+		<br>
+		<label for="filmDurationMinutes">Filmi kestvus minutites</label>
+		<input id="filmDurationMinutes" name="filmDurationMinutes" type="number" value="<%=wrongFilmDurationMinutes%>">
+		<br>
+		<label for="filmDescription">Filmi kirjeldus</label>
+		<input id="filmDescription" name="filmDescription" type="text" placeholder="Kirjeldus" value="<%=wrongFilmDescription%>">
+		<br>
+		<input id="personSubmit" name="personSubmit" type="submit" value="Salvesta">
+	</form>
+	<p><%=notice%></p>
+</body>
+</html>

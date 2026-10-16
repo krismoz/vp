@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+	<meta charset="utf-8">
+	<title>Kris Mozgovoi | Veebiprogrammeerimine</title>
+</head>
+<body>
+	<img src="../pic/veebiprogrammeerimine_2026_AA.png" alt="banner">
+	<h1>Eesti film</h1>
+	<p>Siin näed Eesti filmidega seotud inimesi ning nende seoseid.</p>
+	<ul>
+		<li><a href="/">Avalehele</a></li>
+		<li><a href="/etmovies">Eesti filmide avalehele</a></li>
+		<li><a href="/etmovies/extra_movie_people_connections">Lisa seoseid</a></li>
+	</ul>
+	<hr>
+	<h2>Siit andmebaasist leitud inimesed ning nende seosed.</h2>
+	<ol>
+		<% personConnectionList.forEach(function(connection) { %>
+			<li><%=connection.first_name%> <%=connection.last_name%> | Roll: <%=connection.profession_title%> | Filmis: "<%=connection.movie_title%>" | Tegelaskuju: <%=connection.character_name || '-' %></li>
+		<% }); %>
+	</ol>
+</body>
+</html>

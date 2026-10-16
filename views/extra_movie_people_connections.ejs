@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+	<meta charset="utf-8">
+	<title>Kris Mozgovoi | Veebiprogrammeerimine</title>
+</head>
+<body>
+	<img src="../pic/veebiprogrammeerimine_2026_AA.png" alt="banner">
+	<h1>Eesti film</h1>
+	<p>Siin saab lisada seoseid.</p>
+	<ul>
+		<li><a href="/">Avalehele</a></li>
+		<li><a href="/etmovies">Eesti filmide avalehele</a></li>
+	</ul>
+	<hr>
+	<h2>Lisa seoseid</h2>
+	<form method="POST">
+		<label for="personInput">Isik:</label>
+		<select id="personInput" name="personInput" required">
+			<option selected disabled>Vali...</option>
+			<% personList.forEach(person => { %>
+				<option value="<%= person.id %>">
+					<%= person.first_name %> <%= person.last_name %>
+				</option>
+			<% }) %>
+		</select>
+		<br>
+		<label for="movieInput">Film:</label>
+		<select id="movieInput" name="movieInput" required>
+			<option selected disabled>Vali...</option>
+			<% movieList.forEach(movie => { %>
+				<option value="<%= movie.id %>">
+					<%= movie.title %>
+				</option>
+			<% }) %>
+		</select>
+		<br>
+		<label for="professionInput">Amet:</label>
+		<select id="professionInput" name="professionInput" required>
+			<option selected disabled>Vali...</option>
+			<% professionList.forEach(profession => { %>
+				<option value="<%= profession.id %>">
+					<%= profession.title %>
+				</option>
+			<% }) %>
+		</select>
+		<br>
+		<label for="characterInput">Tegelaskuju (kui on näitleja):</label>
+		<input id="characterInput" name="characterInput" type="text" placeholder="Tegelaskuju">
+		<br>
+		<input id="personSubmit" name="personSubmit" type="submit" value="Salvesta">
+		<br>
+		<%=notice%>
+</body>
+</html>

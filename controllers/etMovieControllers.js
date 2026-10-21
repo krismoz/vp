@@ -319,6 +319,7 @@ const etExtraMoviePeopleConnectionsPost = async (req, res) => {
 		res.render('extra_movie_people_connections', {notice: 'Seos edukalt loodud.', personList, movieList, professionList});
 	} catch (err) {
 		console.log('Tekkis viga: ', err);
+		res.render('extra_movie_people_connections', {notice: 'Tekkis viga.', personList, movieList, professionList});
 	}
 	finally {
 		if(connection){

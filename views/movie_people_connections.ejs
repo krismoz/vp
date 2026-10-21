@@ -14,7 +14,7 @@
 		<li><a href="/etmovies/extra_movie_people_connections">Lisa seoseid</a></li>
 	</ul>
 	<hr>
-	<h2>Siit andmebaasist leitud inimesed ning nende seosed.</h2>
+	<h2>Siit andmebaasist leitud inimesed seostega.</h2>
 	<ol>
 		<% personConnectionList.forEach(function(connection) { %>
 			<li><%=connection.first_name%> <%=connection.last_name%> | Roll: <%=connection.profession_title%> | Filmis: "<%=connection.movie_title%>" | Tegelaskuju: <%=connection.character_name || '-' %></li>

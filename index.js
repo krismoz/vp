@@ -18,8 +18,8 @@ const app = express();
 app.set('view engine', 'ejs');
 //Muudan "public" veebiserverile kättesaadavaks
 app.use(express.static('public'));
-//Hakkame päringuid parsima
-app.use(bodyparser.urlencoded({extended: false}));
+//Hakkame päringuid parsima, kui on ainult tekst, siis "false"
+app.use(bodyparser.urlencoded({extended: true}));
 
 //Juhusliku pildi valimine
 //Selle lahenduse sain ma ChatGPT abiga. Next(); ütleb programmile, et töö on tehtud ning võib edasi minna. Kui seda poleks siis programm jääks sinna kinni.
@@ -37,12 +37,31 @@ app.use(async (req, res, next) => {
 });
 
 //avaleht
-app.get('/', (req,res) => {
+app.get('/', async (req,res) => {
+	let connection;
 	//res.send('Express.js veeb käivitus!');
 	const day = dateTimeET.dayET();
 	const date = dateTimeET.dateET(Math.round(Math.random()))
 	const time = dateTimeET.timeET();
-	res.render('index', {day: day, date: date, time: time});
+	try{
+		connection = await mysql.createConnection({
+			host: process.env.DB_HOST,
+			user: process.env.DB_USER,
+			password: process.env.DB_PASS,
+			database: process.env.DB_DATABASE
+		});
+		const [latestGalleryPhoto] = await connection.execute('SELECT filename, alttext FROM galleryphotos WHERE id=(SELECT MAX(id) FROM galleryphotos WHERE privacy=3 AND deleted IS NULL)');
+		res.render('index', {day: day, date: date, time: time, latestGalleryPhoto});
+	} catch (err){
+		console.log('Tekkis viga: ', err);
+		res.render('index', {day: day, date: date, time: time, latestGalleryPhoto: []});
+	}
+	finally {
+		if(connection){
+			await connection.end();
+		}
+	}
+
 });
 
 //vanasõnad
@@ -115,7 +134,6 @@ app.post('/visits/regvisit', async (req, res) => {
 const etMovieRouter = require('./routes/etMovieRoutes');
 app.use('/etmovies', etMovieRouter);
 
-//Siin on vanad viisid kuidas lehtesid kuvasime enne kui läksime üle routeidele ja controlleritele.
 
 //Eesti filmid
 /* app.get('/etmovies', (req, res) => {
@@ -306,4 +324,8 @@ app.post('/etmovies/extra_etmovie_jobs', async (req, res) => {
 		}
 	}
 }); */
+
+const galleryPhotoUploadRouter = require('./routes/galleryPhotoUploadRoutes');
+app.use('/galleryphotoupload', galleryPhotoUploadRouter);
+
 app.listen(5313);

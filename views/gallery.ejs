@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+	<meta charset="utf-8">
+	<title>Kris Mozgovoi | Veebiprogrammeerimine</title>
+</head>
+<body>
+	<img src="../pic/veebiprogrammeerimine_2026_AA.png" alt="banner">	<h1>Kris Mozgovoi | Veebiprogrammeerimine</h1>
+	<p>Siin on kõik galeriise üles laetud avalikud pildid</p>
+	<ul>
+		<li><a href="/">Avalehele</a></li>
+	</ul>
+	<br>
+	<% galleryPhotos.forEach(function(photo) { %>
+		<img src="../gallery/normal/<%= photo.filename%>" alt="<%= photo.alttext || "Uusim avalik foto" %>">
+	<% }); %>
+</body>
+</html>

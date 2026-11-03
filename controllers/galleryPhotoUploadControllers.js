@@ -20,10 +20,11 @@ const galleryPhotoUploadPost = async (req, res) =>{
 		//genereerime oma failinime
 		const fileName = 'vp_' + Date.now() + '.jpg';
 		await fs.rename(req.file.path, req.file.destination + fileName);
+		const watermark = await sharp('./public/pic/vp_logo_small.png').resize({ width: 60}).png().toBuffer();
 		//teeme väiksema veebisõbraliku pildi
-		await sharp(req.file.destination + fileName).resize(800, 500).jpeg({quality: 90}).toFile('./public/gallery/normal/' + fileName);
+		await sharp(req.file.destination + fileName).resize(800, 500).composite([{input: watermark, left: 725, top: 425}]).jpeg({quality: 90}).toFile(process.env.UPLOAD_RESIZED_PATH + fileName);
 		//teeme pisipildi (100x100)
-		await sharp(req.file.destination + fileName).resize(100, 100).jpeg({quality: 90}).toFile('./public/gallery/thumbs/' + fileName);
+		await sharp(req.file.destination + fileName).resize(100, 100).jpeg({quality: 90}).toFile(process.env.UPLOAD_THUMBNAIL_PATH + fileName);
 		connection = await mysql.createConnection({
 			host: process.env.DB_HOST,
 			user: process.env.DB_USER,

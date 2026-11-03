@@ -18,7 +18,10 @@
 		<li><a href="/visits">Külastuse registreerimine</a></li>
 		<li><a href="/etmovies">Eesti filmid</a></li>
 		<li><a href="/galleryphotoupload">Fotode üleslaadimine galeriisse</a></li>
+		<li><a href="/gallery">Fotode galerii</a></li>
 	</ul>
-	<img src="/pic/<%=randomJpgPicture%>" alt="juhuslik pilt">
+	<% latestGalleryPhoto.forEach(function(photo) { %>
+		<img src="/gallery/normal/<%= photo.filename%>" alt="<%= photo.alttext || "Uusim avalik foto" %>">
+	<% }); %>
 </body>
 </html>

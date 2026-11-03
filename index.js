@@ -91,6 +91,29 @@ app.get('/photos', async (req, res) =>{
 		res.render('photos', {allJpgPictures: '404'});
 	}
 });
+//galerii
+app.get('/gallery', async(req, res) =>{
+	let connection;
+	try{
+		connection = await mysql.createConnection({
+			host: process.env.DB_HOST,
+			user: process.env.DB_USER,
+			password: process.env.DB_PASS,
+			database: process.env.DB_DATABASE
+		});
+		const [galleryPhotos] = await connection.execute('SELECT filename, alttext FROM galleryphotos WHERE privacy >= 2 AND deleted IS NULL');
+		res.render('gallery', {galleryPhotos});
+	} catch (err){
+		console.log('Tekkis viga: ', err);
+		res.render('gallery', {galleryPhotos: []});
+	}
+	finally {
+		if(connection){
+			await connection.end();
+		}
+	}
+
+});
 
 //Välja commentitud app.get'id jne on viisid kuidas me lehtesid kuvasime enne kui läksime üle routeidele ja controlleritele.
 

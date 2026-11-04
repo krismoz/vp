@@ -64,6 +64,15 @@ app.get('/', async (req,res) => {
 
 });
 
+app.get('/home', (req, res) => {
+	res.render('home');
+});
+
+
+app.get('/logout', (req, res) => {
+	res.redirect('/');
+});
+
 //vanasõnad
 app.get('/vanasona', async (req, res) => {
 	try{
@@ -118,9 +127,6 @@ app.get('/gallery', async(req, res) =>{
 //Välja commentitud app.get'id jne on viisid kuidas me lehtesid kuvasime enne kui läksime üle routeidele ja controlleritele.
 
 //külastuse registreerimine
-const visitRouter = require('./routes/visitRoutes');
-app.use('/visits', visitRouter);
-
 /*app.get('/visits', async (req, res) => {
 	try {
         const data = await fs.readFile(regTextRef, 'utf8');
@@ -153,10 +159,6 @@ app.post('/visits/regvisit', async (req, res) => {
 		res.render('regvisit', {regMessage: 'Salvestamine ebaõnnestus...'});
 	}
 }); */
-
-const etMovieRouter = require('./routes/etMovieRoutes');
-app.use('/etmovies', etMovieRouter);
-
 
 //Eesti filmid
 /* app.get('/etmovies', (req, res) => {
@@ -348,7 +350,20 @@ app.post('/etmovies/extra_etmovie_jobs', async (req, res) => {
 	}
 }); */
 
+
+const visitRouter = require('./routes/visitRoutes');
+app.use('/visits', visitRouter);
+
+const etMovieRouter = require('./routes/etMovieRoutes');
+app.use('/etmovies', etMovieRouter);
+
 const galleryPhotoUploadRouter = require('./routes/galleryPhotoUploadRoutes');
 app.use('/galleryphotoupload', galleryPhotoUploadRouter);
+
+const signupRouter = require('./routes/signupRoutes');
+app.use('/signup', signupRouter);
+
+const signinRouter = require('./routes/signinRoutes');
+app.use('/signin', signinRouter);
 
 app.listen(5313);

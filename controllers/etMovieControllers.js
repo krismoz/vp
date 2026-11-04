@@ -66,19 +66,19 @@ const etMoviePeopleExtraPost = async (req, res) => {
 		return res.render('extra_movie_people', {notice: 'Eesnimi puudub!', wrongFirstName: req.body.firstNameInput, wrongLastName: req.body.lastNameInput, wrongBornInput: req.body.bornInput, wrongDeceasedInput: deceasedDate});
 	}
 	//Perekonnanime kontroll
-	else if(!req.body.lastNameInput){
+	if(!req.body.lastNameInput){
 		console.log('Perekonnanimi puudub!');
 		return res.render('extra_movie_people', {notice: 'Perekonnanimi puudub!', wrongFirstName: req.body.firstNameInput, wrongLastName: req.body.lastNameInput, wrongBornInput: req.body.bornInput, wrongDeceasedInput: deceasedDate});
 	}
 	//Sünnikuupäeva kontroll
-	else if(!req.body.bornInput || isNaN(bornDate.getTime()) || bornDate > timeNow){
+	if(!req.body.bornInput || isNaN(bornDate.getTime()) || bornDate > timeNow){
 		console.log('Sünnikuupäev ei ole korrektne!');
 		return res.render('extra_movie_people', {notice: 'Sünnikuupäev ei ole korrektne!', wrongFirstName: req.body.firstNameInput, wrongLastName: req.body.lastNameInput, wrongBornInput: req.body.bornInput, wrongDeceasedInput: deceasedDate});
 	}
 	//Surmakuupäeva kontroll
 	// Kõik kontrollid on pandud sulgudes sisse selleks, et kui esimene kontroll on false ehk surmakuupäev on jäetud tühjaks siis && jätab kõik ülejäänud kontrollid vahele sest see teab, et ülejäänud ei saa ka true olla. Muidu tuleb getTime() error. ChatGPT aitas.
 	// Kui on sisestatud surmakuupäev siis "deceasedDate != null" on true ja ta hakkab ülejäänut ka kontrollima.
-	else if(deceasedDate != null && (isNaN(deceasedDateTime.getTime()) || deceasedDateTime > timeNow || deceasedDateTime < bornDate)){
+	if(deceasedDate != null && (isNaN(deceasedDateTime.getTime()) || deceasedDateTime > timeNow || deceasedDateTime < bornDate)){
 		console.log('Surmakuupäev ei ole korrektne!');
 		return res.render('extra_movie_people', {notice: 'Surmakuupäev ei ole korrektne!', wrongFirstName: req.body.firstNameInput, wrongLastName: req.body.lastNameInput, wrongBornInput: req.body.bornInput, wrongDeceasedInput: deceasedDate});
 	}

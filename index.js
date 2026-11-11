@@ -1,10 +1,15 @@
 const express = require('express');
+const bodyparser = require('body-parser');
 const dateTimeET = require('./src/dateTimeET.js');
 const randomJpg = require('./src/pildid.js');
 const fs = require('fs').promises;
 //moodul andmebaasiga suhtlemiseks, koos async võimalustega
 const mysql = require('mysql2/promise');
-const bodyparser = require('body-parser');
+//sessiooni moodul
+const session = require('express-session');
+const MySQLStore = require('express-mysql-session')(session);
+//sisselogimise kontrolli vahevara
+const checkLogin = require('./src/checkLogin');
 //moodul keskkonnamuutujate lugemiseks
 require('dotenv').config();
 
@@ -14,6 +19,26 @@ const regTextRef = 'public/txt/visits.txt';
 
 //Käivitan express() funktsiooni ja tähistan töötava asja nimega "app"
 const app = express();
+//määrame sessioonihalduse
+
+//esimene variant kasutas default memorystore'i ja säilitas vaid ühe sessiooni korraga
+//app.use(session({secret: process.env.SES_SECRET, saveUninitialized: false, resave: true}));
+const sessionStore = new MySQLStore({
+			host: process.env.DB_HOST,
+			user: process.env.DB_USER,
+			password: process.env.DB_PASS,
+			database: process.env.DB_DATABASE
+		});
+app.use(session({
+	secret: process.env.SES_SECRET,
+	store: sessionStore,
+	saveUninitialized: false,
+	resave: false,
+	cookie: {
+		maxAge: 1000 * 60 * 60 * 1 // sessioon aegub tunniga (millisekundid -> minut -> tund -> mitu tundi)
+	}
+}));
+
 //Määrame veebilehe malide järgi renderdamise mootori (EJS)
 app.set('view engine', 'ejs');
 //Muudan "public" veebiserverile kättesaadavaks
@@ -64,12 +89,14 @@ app.get('/', async (req,res) => {
 
 });
 
-app.get('/home', (req, res) => {
+app.get('/home', checkLogin.isLogin, (req, res) => {
 	res.render('home');
 });
 
 
 app.get('/logout', (req, res) => {
+	//hävitame sessioni
+	req.session.destroy();
 	res.redirect('/');
 });
 
@@ -99,29 +126,6 @@ app.get('/photos', async (req, res) =>{
 	} catch(err){
 		res.render('photos', {allJpgPictures: '404'});
 	}
-});
-//galerii
-app.get('/gallery', async(req, res) =>{
-	let connection;
-	try{
-		connection = await mysql.createConnection({
-			host: process.env.DB_HOST,
-			user: process.env.DB_USER,
-			password: process.env.DB_PASS,
-			database: process.env.DB_DATABASE
-		});
-		const [galleryPhotos] = await connection.execute('SELECT filename, alttext FROM galleryphotos WHERE privacy >= 2 AND deleted IS NULL');
-		res.render('gallery', {galleryPhotos});
-	} catch (err){
-		console.log('Tekkis viga: ', err);
-		res.render('gallery', {galleryPhotos: []});
-	}
-	finally {
-		if(connection){
-			await connection.end();
-		}
-	}
-
 });
 
 //Välja commentitud app.get'id jne on viisid kuidas me lehtesid kuvasime enne kui läksime üle routeidele ja controlleritele.
@@ -359,6 +363,9 @@ app.use('/etmovies', etMovieRouter);
 
 const galleryPhotoUploadRouter = require('./routes/galleryPhotoUploadRoutes');
 app.use('/galleryphotoupload', galleryPhotoUploadRouter);
+
+const galleryRouter = require('./routes/galleryRoutes');
+app.use('/gallery', galleryRouter);
 
 const signupRouter = require('./routes/signupRoutes');
 app.use('/signup', signupRouter);

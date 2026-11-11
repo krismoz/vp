@@ -3,6 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<title>Kris Mozgovoi | Veebiprogrammeerimine</title>
+	<link rel="styleSheet" href="/style/gallery.css">
+	<script src="/script/gallery.js" defer></script>
 </head>
 <body>
 	<img src="../pic/veebiprogrammeerimine_2026_AA.png" alt="banner">	<h1>Kris Mozgovoi | Veebiprogrammeerimine</h1>
@@ -11,9 +13,21 @@
 		<li><a href="/home">Avalehele</a></li>
 		<li><a href="/logout">Logi välja</a></li>
 	</ul>
-	<br>
-	<% galleryPhotos.forEach(function(photo) { %>
-		<img src="../gallery/normal/<%= photo.filename%>" alt="<%= photo.alttext || "Uusim avalik foto" %>">
-	<% }); %>
+	<hr>
+	<!--Dialoogiaken normaalsuuruses fotode näitamiseks-->
+	<dialog id="modal" class="modalarea">
+		<span id="modalClose" class="modalclose">&times;</span>
+		<div class="modalhorizontal">
+			<div class="modalvertical">
+				<p id="modalCaption"></p>
+				<img id="modalImage" src="../pic/empty.png" alt="galeriipilt">
+			</div>
+		</div>
+	</dialog>
+	<div id="gallery" class="gallery">
+		<% galleryPhotos.forEach(function(image) { %>
+			<img src="<%=imagehref%><%=image.filename%>" alt="<%= image.alttext || "Galerii pilt" %>" data-id="<%=image.id%>" data-filename="<%=image.filename%>" class="thumbs">
+		<% }); %>
+	</div>
 </body>
 </html>

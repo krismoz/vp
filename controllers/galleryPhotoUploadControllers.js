@@ -32,7 +32,8 @@ const galleryPhotoUploadPost = async (req, res) =>{
 			database: process.env.DB_DATABASE
 		});
 		//const sqlReq = 'INSERT INTO galleryphotos (filename, origname, alttext, privacy, userid) VALUES (?,?,?,?,?)'; Tegin vajaliku käsu all ise.
-		const userId = 1; //See on ajutine, kuni teeme kasutajkontod ja sisselogimise
+		//const userId = 1; //See on ajutine, kuni teeme kasutajkontod ja sisselogimise
+		const userId = req.session.userId;
 		const [result] = await connection.execute(
 		'INSERT INTO galleryphotos (filename, origname, alttext, privacy, userid) VALUES (?,?,?,?,?)',
 		[fileName, req.file.originalname, req.body.altInput, req.body.privacyInput, userId]);
